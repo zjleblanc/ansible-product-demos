@@ -9,6 +9,13 @@
         adapter_names: 'Ethernet*'
         dns_servers: "{{ hostvars[domain_controller]['private_ip_address'] }}"
 
+    - name: Ensure Demo OU exists
+      delegate_to: "{{ domain_controller }}"
+      community.windows.win_domain_ou:
+        name: AWS EC2s
+        path: "OU=AWS,DC=ansible,DC=local"
+        state: present
+
     - name: Join ansible.local domain
       register: r_domain_membership
       ansible.windows.win_domain_membership:
@@ -16,7 +23,7 @@
         hostname: "{{ inventory_hostname }}"
         domain_admin_user: "{{ ansible_user }}@ansible.local"
         domain_admin_password: "{{ ansible_password }}"
-        domain_ou_path: "DC=ansible,DC=local"
+        domain_ou_path: "OU=AWS,DC=ansible,DC=local"
         state: domain
 
     - name: Reboot windows machine
