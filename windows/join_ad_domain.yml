@@ -6,7 +6,7 @@
   tasks:
     - name: Set a single address on the adapter named Ethernet
       ansible.windows.win_dns_client:
-        adapter_names: Ethernet
+        adapter_names: 'Ethernet*'
         dns_servers: "{{ hostvars[domain_controller]['private_ip_address'] }}"
 
     - name: Join ansible.local domain
