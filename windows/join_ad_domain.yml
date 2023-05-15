@@ -16,7 +16,7 @@
         hostname: "{{ inventory_hostname }}"
         domain_admin_user: "{{ ansible_user }}@ansible.local"
         domain_admin_password: "{{ ansible_password }}"
-        domain_ou_path: "OU=Computers,DC=ansible,DC=local"
+        domain_ou_path: "DC=ansible,DC=local"
         state: domain
 
     - name: Reboot windows machine
