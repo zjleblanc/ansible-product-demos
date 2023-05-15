@@ -12,8 +12,7 @@
     - name: Ensure Demo OU exists
       delegate_to: "{{ domain_controller }}"
       community.windows.win_domain_ou:
-        name: AWS EC2s
-        path: "OU=AWS,DC=ansible,DC=local"
+        name: Demo
         state: present
 
     - name: Join ansible.local domain
@@ -23,7 +22,7 @@
         hostname: "{{ inventory_hostname }}"
         domain_admin_user: "{{ ansible_user }}@ansible.local"
         domain_admin_password: "{{ ansible_password }}"
-        domain_ou_path: "OU=AWS,DC=ansible,DC=local"
+        domain_ou_path: "OU=Demo,DC=ansible,DC=local"
         state: domain
 
     - name: Reboot windows machine
