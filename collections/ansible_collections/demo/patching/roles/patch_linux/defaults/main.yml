@@ -6,4 +6,4 @@ exclude_packages:
   - fprintd-pam
 allow_reboot: true
 
-pre_check_path: "/tmp/{{ inventory_hostname }}/pre_check.json"
+pre_check_path: "/tmp/{{ inventory_hostname }}_pre_check.json"
