@@ -5,3 +5,5 @@ exclude_packages:
   - authselect-libs
   - fprintd-pam
 allow_reboot: true
+
+pre_check_path: "/tmp/{{ inventory_hostname }}/pre_check.json"

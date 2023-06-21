@@ -2,6 +2,7 @@
 <html>
 <head>
   <title> Linux Patch Report </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
 </head>
 <body>
 <center>
@@ -25,6 +26,7 @@
             <th>Operating System</th>
             <th>Operating System Version</th>
             <th>Required Updates</th>
+            <th>Post Check</th>
         </tr>
     </thead>
     <tbody>
@@ -52,12 +54,17 @@
 {% endif %}
               </ul>
             </td>
+            <td>
+                <pre><code class="language-diff">{{ hostvars[linux_host]['post_check_diff'] | default('') }}</code></pre>
+            </td>
         </tr>
 {% endfor %}
     </tbody>
 </table>
 <center><p>Created with Ansible on {{hostvars[inventory_hostname].ansible_date_time.iso8601}}</p></center>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script type="text/javascript">
+hljs.highlightAll();
 function tableToCSV() {
 
     // Variable to store the final csv data
