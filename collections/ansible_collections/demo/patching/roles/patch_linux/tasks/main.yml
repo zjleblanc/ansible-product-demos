@@ -47,7 +47,6 @@
   check_mode: false
 
 - name: Post-check | services state
-  delegate_to: localhost
   register: r_post_check
   ansible.utils.fact_diff:
     before: "{{ lookup('file', pre_check_path) | from_json }}"
