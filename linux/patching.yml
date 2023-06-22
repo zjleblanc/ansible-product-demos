@@ -30,7 +30,6 @@
 
     - name: Deploy report server
       delegate_to: "{{ report_server }}"
-      become: true
       run_once: true # noqa: run-once[task]
       block:
         - name: Build report server
