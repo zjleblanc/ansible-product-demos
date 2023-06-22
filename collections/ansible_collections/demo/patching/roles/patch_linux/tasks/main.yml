@@ -8,10 +8,8 @@
   check_mode: false
 
 - name: Pre-check | services state
-  delegate_to: localhost
-  ansible.builtin.copy:
-    content: "{{ services | to_json }}"
-    dest: "{{ pre_check_path }}"
+  ansible.builtin.set_fact:
+    pre_check_services: "{{ services }}"
 
 - name: Upgrade packages (yum)
   ansible.builtin.yum:
@@ -49,7 +47,7 @@
 - name: Post-check | services state
   register: r_post_check
   ansible.utils.fact_diff:
-    before: "{{ lookup('file', pre_check_path) | from_json }}"
+    before: "{{ pre_check_services }}"
     after: "{{ services }}"
 
 - name: Save diff for report
