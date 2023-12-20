@@ -4,6 +4,9 @@
   gather_facts: false
 
   tasks:
+    - name: Ensure the required NuGet package provider version is installed
+      ansible.windows.win_shell: Find-PackageProvider -Name Nuget -ForceBootstrap -IncludeDependencies -Force
+      
     - name: Setup the SecurityPolicyDSC module
       community.windows.win_psmodule:
         name: SecurityPolicyDSC
