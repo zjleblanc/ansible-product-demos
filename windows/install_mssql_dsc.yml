@@ -11,7 +11,7 @@
       vars:
         mssql_netbios: ANSIBLE
         mssql_domain_controller: "{{ domain_controller }}"
-        mssql_base_ldap_path: "OU=Users,OU=Demo,DN=ansible,DN=local"
+        mssql_base_ldap_path: " OU=Users,OU=Demo,DC=ansible,DC=local"
 
         ### From custom credential ###
         # mssql_sqlsvc_account_pass:
