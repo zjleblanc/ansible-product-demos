@@ -11,6 +11,7 @@
 
     - name: Ensure Demo OU exists
       delegate_to: "{{ domain_controller }}"
+      throttle: 1
       community.windows.win_domain_ou:
         name: Demo
         state: present
