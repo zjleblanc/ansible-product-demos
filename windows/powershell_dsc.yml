@@ -6,7 +6,7 @@
   tasks:
     - name: Ensure the required NuGet package provider version is installed
       ansible.windows.win_shell: Find-PackageProvider -Name Nuget -ForceBootstrap -IncludeDependencies -Force
-      
+
     - name: Setup the SecurityPolicyDSC module
       community.windows.win_psmodule:
         name: SecurityPolicyDSC
@@ -30,13 +30,13 @@
       ansible.windows.win_dsc:
         resource_name: AccountPolicy
         Name: Minimum_Password_Age
-        Maximum_Password_Age: 20
+        Minimum_Password_Age: 20
 
     - name: Set minimum password length
       ansible.windows.win_dsc:
         resource_name: AccountPolicy
         Name: Minimum_Password_Length
-        Maximum_Password_Age: 8
+        Minimum_Password_Length: 8
 
     - name: Set password complexity requirements
       ansible.windows.win_dsc:
