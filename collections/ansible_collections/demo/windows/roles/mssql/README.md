@@ -72,8 +72,8 @@ Including an example of how to use your role (for instance, with variables passe
       ansible.builtin.include_role:
         name: mgmt.windows.mssql
       vars:
-        netbios: AUTODOTES
-        mssql_base_ldap_path: "OU=Users,DN=autodotes,DN=local"
+        netbios: ANSIBLE
+        mssql_base_ldap_path: "OU=Users,DC=ansible,DN=local"
 
         ### From custom credential ###
         # mssql_sqlsvc_account_pass:
