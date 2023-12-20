@@ -1,0 +1,19 @@
+---
+- name: Install SQL Server on Window host
+  hosts: "{{ _hosts | default(omit) }}"
+  gather_facts: false
+
+  tasks:
+    - name: Install MSSQL using DSC
+      tags: always
+      ansible.builtin.include_role:
+        name: demo.windows.mssql
+      vars:
+        mssql_netbios: ANSIBLE
+        mssql_domain_controller: "{{ domain_controller }}"
+        mssql_base_ldap_path: "OU=Users,OU=Demo,DN=ansible,DN=local"
+
+        ### From custom credential ###
+        # mssql_sqlsvc_account_pass:
+        # mssql_agentsvc_account_pass
+        # mssql_assvc_account_pass:

@@ -1,0 +1,284 @@
+---
+- name: Assert credentials provided
+  tags: always
+  ansible.builtin.assert:
+    that:
+      - mssql_sqlsvc_account_pass is defined
+      - mssql_agentsvc_account_pass is defined
+      - mssql_assvc_account_pass is defined
+
+- name: Assert domain controller is defined in inventory
+  tags: always
+  ansible.builtin.assert:
+    that: mssql_domain_controller in hostvars
+
+- name: Set up PowerShell for fetching modules
+  tags: prereqs
+  ansible.builtin.win_shell: |
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Install-Module PowerShellGet -AllowClobber -Force
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+
+- name: Install required powershell modules
+  tags: prereqs
+  loop:
+      - name: StorageDsc
+      - name: ServerManager
+      - name: dbatools
+      - name: xNetworking
+      - name: SqlServerDsc
+        required_version: "16.2.0"
+  loop_control:
+    loop_var: module
+  community.windows.win_psmodule:
+    name: "{{ module.name }}"
+    required_version: "{{ module.required_version | default(omit) }}"
+    state: present
+    accept_license: true
+
+- name: Install required features
+  tags: prereqs
+  loop:
+      - name: NET-Framework-Features
+      - name: NET-Framework-45-Features
+        include_sub_features: True
+      - name: WAS
+        include_sub_features: True
+  loop_control:
+    loop_var: feature
+    label: "{{ feature.name }}"
+  notify: reboot windows
+  ansible.windows.win_feature:
+    name: "{{ feature.name }}"
+    include_sub_features: "{{ feature.include_sub_features | default(omit) }}"
+    state: present
+
+- name: Active Directory | Ensure SQL Service account is present
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags: service_account
+  community.windows.win_domain_user:
+    name: "{{ mssql_sqlsvc_account | regex_search('[^\\\\]*$') }}"
+    firstname: "{{ mssql_instance_name }}"
+    surname: SQLSvc
+    password: "{{ mssql_sqlsvc_account_pass }}"
+    password_never_expires: yes
+    user_cannot_change_password: yes
+    description: "SQL Service account for {{ inventory_hostname }}\\{{ mssql_instance_name }}"
+    state: present
+    path: "{{ mssql_base_ldap_path }}"
+    groups:
+      - Domain Users
+
+- name: Active Directory | Ensure SQL Agent Service account is present
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags: service_account
+  community.windows.win_domain_user:
+    name: "{{ mssql_agentsvc_account | regex_search('[^\\\\]*$') }}"
+    firstname: "{{ mssql_instance_name }}"
+    surname: AgentSvc
+    password: "{{ mssql_agentsvc_account_pass }}"
+    password_never_expires: yes
+    user_cannot_change_password: yes
+    description: "SQL Agent service account for {{ inventory_hostname }}\\{{ mssql_instance_name }}"
+    state: present
+    path: "{{ mssql_base_ldap_path }}"
+    groups:
+      - Domain Users
+
+- name: Ensure installation path exists
+  tags: fetch_media
+  ansible.windows.win_file:
+    path: "{{ mssql_temp_download_path }}"
+    state: directory
+
+- name: Fetch SQL Media Downloader
+  tags: fetch_media
+  ansible.windows.win_get_url:
+    url: "{{ mssql_installation_source }}"
+    dest: "{{ mssql_temp_download_path }}\\SQLServer{{ mssql_version }}-SSEI-Dev.exe"
+
+- name: Ensure installation path exists
+  tags: fetch_media
+  ansible.windows.win_file:
+    path: "{{ mssql_installation_path }}"
+    state: directory
+
+- name: "Use Media Downloader to fetch SQL Installation CABs to {{ mssql_installation_path }}"
+  tags: fetch_media
+  ansible.windows.win_shell: "{{ mssql_temp_download_path }}\\SQLServer{{ mssql_version }}-SSEI-Dev.exe /Action=Download /MediaPath={{ mssql_installation_path }} /MediaType=CAB /Quiet"
+
+- name: Ensure installation media extraction path is empty
+  tags: fetch_media
+  ansible.windows.win_file:
+    path: "{{ mssql_installation_path }}\\Media"
+    state: absent
+
+- name: Extract installation media
+  tags: fetch_media
+  notify: reboot windows
+  ansible.windows.win_shell: "{{ mssql_installation_path }}\\SQLServer{{ mssql_version }}-DEV-x64-ENU.exe /X:{{ mssql_installation_path }}\\Media /Q"
+
+- meta: flush_handlers
+
+- name: Wait for host to respond (600s)
+  tags: install
+  ansible.builtin.wait_for_connection:
+
+- name: Install SQL Server
+  tags: install
+  ansible.windows.win_dsc:
+    resource_name: SQLSetup
+    Action: Install
+    UpdateEnabled: False
+    SourcePath: "{{ mssql_installation_path }}\\Media"
+    InstanceName: "{{ mssql_instance_name }}"
+    InstallSharedDir: "{{ mssql_installshared_path }}"
+    InstallSharedwowDir: "{{ mssql_installsharedwow_path }}"
+    InstanceDir: "{{ mssql_instance_path }}"
+    InstallSQLDataDir: "{{ mssql_sqlinstalldata_path }}"
+    SQLUserDBDir: "{{ mssql_sqluserdata_path }}"
+    SQLUserDBLogDir: "{{ mssql_sqluserlog_path }}"
+    SQLTempDBDir: "{{ mssql_sqltempDB_path }}"
+    SQLTempDBLogDir: "{{ mssql_sqltempDBlog_path }}"
+    Features: "{{ mssql_features }}"
+    SQLCollation: "{{ mssql_collation }}"
+    BrowserSvcStartupType: "{{ mssql_browsersvc_mode }}"
+    SuppressReboot: "{{ mssql_suppress_reboot }}"
+
+    # SQL Service Account
+    SQLSvcAccount_username: "{{ mssql_sqlsvc_account }}"
+    SQLSvcAccount_password: "{{ mssql_sqlsvc_account_pass }}"
+    # SQL Agent Service Account
+    AgtSvcAccount_username: "{{ mssql_agentsvc_account }}"
+    AgtSvcAccount_password: "{{ mssql_agentsvc_account_pass }}"
+    # SQL Analysis Services Account
+    ASSvcAccount_username: "{{ mssql_assvc_account }}"
+    ASSvcAccount_password: "{{ mssql_assvc_account_pass }}"
+
+    # Used when installing on a network path, comment out 
+    # SourceCredential_username: "{{ ansible_user }}"
+    # SourceCredential_password: "{{ ansible_password }}"
+
+    # System Admins 
+    SQLSysAdminAccounts: "{{ mssql_sysadmin_accounts }}"
+    # # Analysis Services Admins (if installed)
+    ASSysAdminAccounts: "{{ mssql_asadmin_accounts }}"
+
+- name: Firewall // Allow Database Engine for instance
+  tags:
+    - configure 
+    - configure_firewall
+  community.windows.win_firewall_rule:
+    name: "SQL Server Database Engine instance {{ mssql_instance_name }}"
+    description: Allows the Database Engine to access the network
+    localport: 1433
+    action: allow
+    direction: in
+    protocol: tcp
+    state: present
+    enabled: yes
+
+- name: Firewall // Allow SQLBrowser for instance
+  tags:
+    - configure 
+    - configure_firewall
+  community.windows.win_firewall_rule:
+    name: "SQL Server Browser instance {{ mssql_instance_name }}"
+    description: Allows the SQL Server Browser to access the network
+    localport: 1434
+    action: allow
+    direction: in
+    protocol: udp
+    state: present
+    enabled: yes
+
+- name: Begin SQL Server configuration
+  block: 
+  - name: Listen on all addresses
+    tags:
+      - configure
+      - configure_sql_firewall
+    ansible.windows.win_dsc:
+      resource_name: SqlProtocol
+      InstanceName: "{{ mssql_instance_name }}"
+      ProtocolName: TcpIp
+      ListenOnAllIpAddresses: True
+      Enabled: True
+
+  - name: Enable TCP Connectivity
+    tags:
+      - configure
+      - configure_sql
+    ansible.windows.win_dsc:
+      resource_name: SqlProtocolTcpIp
+      InstanceName: "{{ mssql_instance_name }}"
+      TcpPort: "{{ mssql_port }}"
+      IPAddressGroup: IpAll
+      Enabled: True
+      SuppressRestart: False
+
+  - name: Adjust Max Server Memory to {{ mssql_max_server_memory }}
+    tags:
+      - configure 
+      - configure_sql
+    when: mssql_max_server_memory is defined
+    ansible.windows.win_dsc:
+      resource_name: SqlConfiguration 
+      InstanceName: "{{ mssql_instance_name }}"
+      ServerName: localhost
+      OptionName: max server memory (MB)
+      OptionValue: "{{ mssql_max_server_memory }}"
+      RestartService: False
+
+  - name: Adjust Min Server Memory to {{ mssql_min_server_memory }}
+    when: mssql_min_server_memory is defined
+    tags:
+      - configure
+      - configure_sql
+    ansible.windows.win_dsc:
+      resource_name: SqlConfiguration 
+      ServerName: localhost
+      InstanceName: "{{ mssql_instance_name }}"
+      OptionName: min server memory (MB)
+      OptionValue: "{{ mssql_min_server_memory }}"
+
+  - name: Adjust Max Degree of Parallelism
+    when: mssql_max_degree_of_parallelism is defined
+    tags:
+      - configure
+      - configure_sql
+    ansible.windows.win_dsc:
+      resource_name: SqlConfiguration
+      ServerName: localhost
+      InstanceName: "{{ mssql_instance_name }}"
+      OptionName: max degree of parallelism
+      OptionValue: "{{ mssql_max_degree_of_parallelism }}"
+
+- name: "Ensure {{ mssql_domain_controller }} has SqlServer module"
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags:
+    - test
+    - test_sql
+  community.windows.win_psmodule:
+    name: SqlServer
+    state: present
+    accept_license: true
+
+- name: "Test connection with SQL query from {{ mssql_domain_controller }}"
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags:
+    - test
+    - test_sql
+  register: r_test_sql
+  ansible.windows.win_shell: >
+    Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
+      -Server "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+      -TrustServerCertificate
+
+- name: Print SQL output
+  delegate_to: localhost
+  tags:
+    - test
+    - test_sql
+  ansible.builtin.debug:
+    var: r_test_sql.stdout_lines

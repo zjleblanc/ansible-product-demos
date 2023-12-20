@@ -8,4 +8,5 @@ choose_demo_example_aws.yml
 *.gz
 
 **/roles/*
+!**/windows/roles/*
 !**/roles/requirements.yml
