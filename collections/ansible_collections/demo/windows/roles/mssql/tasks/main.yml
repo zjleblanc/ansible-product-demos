@@ -65,6 +65,7 @@
   tags: service_account
   community.windows.win_domain_group:
     name: SQL Server Admins
+    scope: domainlocal
     managed_by: Domain Admins
 
 - name: Active Directory | Ensure SQL Service account is present
