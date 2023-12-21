@@ -1,6 +1,6 @@
 ---
 - name: Install SQL Server on Window host
-  hosts: "{{ _hosts | default(omit) }}"
+  hosts: "{{ _host | default(omit) }}"
   gather_facts: false
 
   tasks:
