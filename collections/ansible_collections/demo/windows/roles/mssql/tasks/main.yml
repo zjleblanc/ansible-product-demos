@@ -13,6 +13,7 @@
     that: mssql_domain_controller in hostvars
 
 - name: Set service startup mode to auto and ensure it is started
+  delegate_to: "{{ mssql_domain_controller }}"
   tags: always
   loop:
     - TCP/IP NetBIOS Helper
