@@ -60,6 +60,12 @@
     include_sub_features: "{{ feature.include_sub_features | default(omit) }}"
     state: present
 
+- name: Active Directory | Ensure SQL Server Admins group exists
+  tags: service_account
+  community.windows.win_domain_group:
+    name: SQL Server Admins
+    managed_by: Domain Admins
+
 - name: Active Directory | Ensure SQL Service account is present
   delegate_to: "{{ mssql_domain_controller }}"
   tags: service_account
@@ -75,6 +81,7 @@
     path: "{{ mssql_base_ldap_path }}"
     groups:
       - Domain Users
+      - SQL Server Admins
 
 - name: Active Directory | Ensure SQL Agent Service account is present
   delegate_to: "{{ mssql_domain_controller }}"
@@ -91,6 +98,7 @@
     path: "{{ mssql_base_ldap_path }}"
     groups:
       - Domain Users
+      - SQL Server Admins
 
 - name: Ensure installation path exists
   tags: fetch_media
