@@ -126,7 +126,7 @@
 
 - name: Install SQL Server
   tags: install
-  retries: 1
+  retries: 2
   delay: 30
   ansible.windows.win_dsc:
     resource_name: SQLSetup
