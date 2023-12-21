@@ -17,3 +17,14 @@
         # mssql_sqlsvc_account_pass:
         # mssql_agentsvc_account_pass
         # mssql_assvc_account_pass:
+
+- name: Test SQL Server connection
+  hosts: "{{ domain_controller | default(omit) }}"
+  gather_facts: false
+
+  tasks:
+    - name: Install MSSQL using DSC
+      tags: always
+      ansible.builtin.include_role:
+        name: demo.windows.mssql
+        tasks_from: test_connection
