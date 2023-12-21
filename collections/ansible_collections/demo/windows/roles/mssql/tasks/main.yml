@@ -12,17 +12,6 @@
   ansible.builtin.assert:
     that: mssql_domain_controller in hostvars
 
-- name: Set service startup mode to auto and ensure it is started
-  delegate_to: "{{ mssql_domain_controller }}"
-  tags: always
-  loop:
-    - TCP/IP NetBIOS Helper
-    - Remote Registry
-  ansible.windows.win_service:
-    name: "{{ item }}"
-    start_mode: auto
-    state: started
-
 - name: Set up PowerShell for fetching modules
   tags: prereqs
   ansible.builtin.win_shell: |
@@ -137,6 +126,8 @@
 
 - name: Install SQL Server
   tags: install
+  retries: 1
+  delay: 30
   ansible.windows.win_dsc:
     resource_name: SQLSetup
     Action: Install
