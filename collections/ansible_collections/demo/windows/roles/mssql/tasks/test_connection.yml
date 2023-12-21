@@ -1,5 +1,6 @@
 ---
 - name: Set up PowerShell for fetching modules
+  delegate_to: "{{ mssql_domain_controller }}"
   tags:
     - test
     - test_sql
@@ -9,6 +10,7 @@
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
 - name: "Ensure {{ inventory_hostname }} has SqlServer module"
+  delegate_to: "{{ mssql_domain_controller }}"
   tags:
     - test
     - test_sql
@@ -17,14 +19,15 @@
     state: present
     accept_license: true
 
-- name: "Test connection with SQL query from {{ inventory_hostname }}"
+- name: "Test connection with SQL query from {{ mssql_domain_controller }} to {{ inventory_hostname }}"
+  delegate_to: "{{ mssql_domain_controller }}"
   tags:
     - test
     - test_sql
   register: r_test_sql
   ansible.windows.win_shell: >
     Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
-      -Server "{{ hostvars[_host]['ansible_host'] }}"
+      -Server "{{ hostvars[inventory_hostname]['ansible_host'] }}"
       -TrustServerCertificate
 
 - name: Print SQL output

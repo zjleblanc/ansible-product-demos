@@ -1,6 +1,6 @@
 ---
 - name: Install SQL Server on Window host
-  hosts: "{{ _host | default(omit) }}"
+  hosts: "{{ _hosts | default(omit) }}"
   gather_facts: false
 
   tasks:
@@ -19,7 +19,7 @@
         # mssql_assvc_account_pass:
 
 - name: Test SQL Server connection
-  hosts: "{{ domain_controller | default(omit) }}"
+  hosts: "{{ _hosts | default(omit) }}"
   gather_facts: false
 
   tasks:
@@ -28,3 +28,5 @@
       ansible.builtin.include_role:
         name: demo.windows.mssql
         tasks_from: test_connection
+      vars:
+        mssql_domain_controller: "{{ domain_controller }}"
