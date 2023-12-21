@@ -1,0 +1,19 @@
+---
+- name: "Test connection with SQL query from {{ mssql_domain_controller }} to {{ inventory_hostname }}"
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags:
+    - test
+    - test_sql
+  register: r_test_sql
+  ansible.windows.win_shell: >
+    Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
+      -Server "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+      -TrustServerCertificate
+
+- name: Print SQL output
+  delegate_to: localhost
+  tags:
+    - test
+    - test_sql
+  ansible.builtin.debug:
+    var: r_test_sql.stdout_lines
