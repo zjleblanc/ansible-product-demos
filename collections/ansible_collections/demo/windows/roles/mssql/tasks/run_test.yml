@@ -7,7 +7,7 @@
   register: r_test_sql
   ansible.windows.win_shell: >
     Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
-      -Server "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+      -Server "{{ hostvars[inventory_hostname]['private_ip_address'] }}"
       -TrustServerCertificate
 
 - name: Print SQL output
