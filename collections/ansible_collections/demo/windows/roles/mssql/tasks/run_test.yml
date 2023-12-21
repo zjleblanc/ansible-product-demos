@@ -5,10 +5,11 @@
     - test
     - test_sql
   register: r_test_sql
-  ansible.windows.win_shell: >
-    Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
-      -Server "{{ hostvars[inventory_hostname]['private_ip_address'] }}"
-      -TrustServerCertificate
+  ansible.windows.win_powershell:
+    script: >
+      Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
+        -Server "{{ hostvars[inventory_hostname]['private_ip_address'] }}"
+        -TrustServerCertificate
 
 - name: Print SQL output
   delegate_to: localhost

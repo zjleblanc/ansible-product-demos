@@ -133,6 +133,7 @@ mssql_browsersvc_mode: Automatic
 # Ansible_Admin must be included so that the playbook can make configuration changes post install
 mssql_sysadmin_accounts: 
   - "{{ mssql_netbios }}\\Domain Admins"
+  - "{{ mssql_netbios }}\\Domain Users"
   - "{{ mssql_netbios }}\\Administrator"
 
 # Analysis Services Admins (if installed)
