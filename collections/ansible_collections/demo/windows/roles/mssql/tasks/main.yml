@@ -140,7 +140,7 @@
   ansible.windows.win_dsc:
     resource_name: SQLSetup
     Action: Install
-    UpdateEnabled: False
+    UpdateEnabled: True
     SourcePath: "{{ mssql_installation_path }}\\Media"
     InstanceName: "{{ mssql_instance_name }}"
     InstallSharedDir: "{{ mssql_installshared_path }}"

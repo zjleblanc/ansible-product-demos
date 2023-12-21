@@ -14,6 +14,10 @@
      - ec2-user in Administrators group with admin password same as AAP
 6. Run the Create AD Domain job (wait for vm to spin up if you get connection errors)
 7. Download RDP for domain controller and open Server Manager to support demos
+8. Add rules to security group for SQL Server
+    - TCP 1433 for 0.0.0.0 (SQL Server)
+    - UDP 1434 for 0.0.0.0 (SQL Server Browser)
+    - Supports showing connection from DBeaver
 
 ## demos
 
