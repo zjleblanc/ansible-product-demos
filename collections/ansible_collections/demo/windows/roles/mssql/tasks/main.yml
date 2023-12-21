@@ -61,6 +61,7 @@
     state: present
 
 - name: Active Directory | Ensure SQL Server Admins group exists
+  delegate_to: "{{ mssql_domain_controller }}"
   tags: service_account
   community.windows.win_domain_group:
     name: SQL Server Admins
