@@ -69,6 +69,15 @@
     include_sub_features: "{{ feature.include_sub_features | default(omit) }}"
     state: present
 
+- name: Active Directory | Ensure base LDAP OU exists
+  when: mssql_base_ldap_path.split(',')[0].split('=')[0] == 'OU'
+  delegate_to: "{{ mssql_domain_controller }}"
+  tags: service_account
+  microsoft.ad.ou:
+    name: "{{ mssql_base_ldap_path.split(',')[0].split('=')[-1] }}"
+    path: "{{ mssql_base_ldap_path.split(',')[1:] }}"
+    state: present
+
 - name: Active Directory | Ensure SQL Server Admins group exists
   delegate_to: "{{ mssql_domain_controller }}"
   tags: service_account
