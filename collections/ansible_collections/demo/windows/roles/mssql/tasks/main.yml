@@ -12,6 +12,15 @@
   ansible.builtin.assert:
     that: mssql_domain_controller in hostvars
 
+- name: Set service startup mode to auto and ensure it is started
+  loop:
+    - RpcSs
+    - RemoteRegistry
+  ansible.windows.win_service:
+    name: "{{ item }}"
+    start_mode: auto
+    state: started
+
 - name: Disable Teredo protocol to prevent RPC availability errors
   ansible.windows.win_regedit:
     path: HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
@@ -144,9 +153,9 @@
 - name: Install SQL Server
   tags: install
   register: r_install_mssql
-  retries: 2
+  retries: 3
   until: r_install_mssql is not failed
-  delay: 30
+  delay: 60
   ansible.windows.win_dsc:
     resource_name: SQLSetup
     Action: Install

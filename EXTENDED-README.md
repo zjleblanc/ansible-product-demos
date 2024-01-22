@@ -8,16 +8,24 @@
 2. Setup Automation Hub credential
 3. Run the setup job template for windows and cloud
 4. Setup the AWS credential
-5. Use postman to create windows vms from `windows_full` blueprint
+5. Run the Create VPC job (use defaults)
+6. Run the Create Keypair job (use defaults)
+7. Use postman to create windows vms from `windows_full` blueprint
      - one for domain controller
      - x additional vms for demo
      - ec2-user in Administrators group with admin password same as AAP
-6. Run the Create AD Domain job (wait for vm to spin up if you get connection errors)
-7. Download RDP for domain controller and open Server Manager to support demos
-8. Add rules to security group for SQL Server
+8. Run the Create AD Domain job (wait for vm to spin up if you get connection errors)
+9. Download RDP for domain controller and open Server Manager to support demos
+10. Add rules to security group for SQL Server
     - TCP 1433 for 0.0.0.0 (SQL Server)
     - UDP 1434 for 0.0.0.0 (SQL Server Browser)
     - Supports showing connection from DBeaver
+
+## todos
+
+- Figure out lingering RPC server unavailability
+  - automate this solution [here](https://blog.sqlauthority.com/2018/07/21/sql-server-install-error-validation-for-setting-agtsvcaccount-failed-error-message-the-rpc-server-is-unavailable/)
+  - https://eddiejackson.net/lab/2022/03/08/powershell-add-dns-suffix-to-ethernet-connections/
 
 ## demos
 

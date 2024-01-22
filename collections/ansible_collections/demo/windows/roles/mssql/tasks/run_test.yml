@@ -8,8 +8,8 @@
   ansible.windows.win_powershell:
     script: >
       Invoke-SqlCmd -Query "SELECT GETDATE() AS TimeOfQuery"
-        -ServerInstance "{{ hostvars[inventory_hostname]['private_ip_address'] }}"
-        -TrustServerCertificate
+      -ServerInstance "{{ hostvars[inventory_hostname]['private_ip_address'] }}"
+      -TrustServerCertificate
 
 - name: Print SQL output
   delegate_to: localhost
