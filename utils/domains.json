@@ -1,0 +1,35 @@
+{
+  "state": {
+    "domains": [
+      {
+        "name": "Network",
+        "labels": [
+          { "name": "network" },
+          { "name": "network.backup" },
+          { "name": "network.restore" }
+        ]
+      },
+      {
+        "name": "Backup",
+        "labels": [
+          { "name": "backup" },
+          { "name": "restore" },
+          { "name": "backup_experience" }
+        ]
+      },
+      {
+        "name": "Security",
+        "labels": [
+          { "name": "security" },
+          { "name": "security.vulnerability" }
+        ]
+      },
+      {
+        "name": "TestDomain",
+        "labels": []
+      }
+    ],
+    "activeDomains": []
+  },
+  "version": 0
+}
