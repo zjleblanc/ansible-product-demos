@@ -129,11 +129,29 @@ this repo over time. Discover what currently exists by reading, in order:
    behind the catalog).
 3. If still unsure, use `Glob` on `<domain>/docs/*.md` and skim titles.
 
-Present 2-4 relevant candidate demos to the user with one-line blurbs (via
-`AskQuestion` if there's a real choice to make) rather than the full list of
-dozens. Let them pick one, or ask clarifying questions if their use case
-spans multiple domains (e.g. "Windows + AD" touches both `windows` setup and
-possibly `cloud` for host provisioning).
+Present 2-4 relevant candidate demos to the user with one-line blurbs via
+`AskQuestion` with `allow_multiple: true` -- just like the use-case
+question in this step, the user may be picturing more than one demo (e.g.
+a provisioning demo plus a day-2 ops demo on top of it), not a single
+either/or choice. Don't force a single pick. If their use case spans
+multiple domains (e.g. "Windows + AD" touches both `windows` setup and
+possibly `cloud` for host provisioning), it's fine for the candidate list
+to mix demos from more than one domain.
+
+Always add one extra option at the end of the list: **"View more options"**
+(none of these selected if the user wants a totally different search).
+If the user selects it (alone, or alongside other demos they did want):
+
+1. Re-run the discovery procedure above, excluding demos already shown, and
+   ask the same question again with the next batch of 2-4 candidates (plus
+   another "View more options" entry if even more exist).
+2. Carry forward any demos the user already picked in earlier rounds --
+   merge them with whatever they pick from the new batch. Keep looping
+   until the user picks only concrete demos (no "View more options") or
+   confirms they're done browsing.
+3. When presenting the final combined list back to the user before Step 4,
+   state it explicitly (e.g. "So far you've picked: X, Y, Z") so they can
+   correct you before you proceed.
 
 ## Step 4 -- Domain setup in AAP
 
@@ -188,9 +206,12 @@ Tell the user the rough time and cost expectations if the demo doc or
 [domain-reference.md](domain-reference.md) mentions them (cloud/AWS
 resources cost money while running).
 
-## Step 7 -- Walk through the specific demo
+## Step 7 -- Walk through the specific demo(s)
 
-Read the full demo doc at `<domain>/docs/<slug>.md` (path comes from
+If the user selected more than one demo in Step 3, walk through each one
+in turn (dedupe shared setup/credential/infra steps across them rather than
+repeating Steps 4-6 per demo if they share a domain). For each demo, read
+the full demo doc at `<domain>/docs/<slug>.md` (path comes from
 `readme_path` in `demos.yml`, or the fallback table in
 `<domain>/docs/README.md`). Present it to the user in this order (matches
 the doc's own structure):
