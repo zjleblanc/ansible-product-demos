@@ -1,5 +1,5 @@
 ---
-name: demo-guide
+name: apd-guide
 description: >
   Interactive, chatbot-style guide for Ansible Product Demos (APD). Helps
   users with little or no Ansible knowledge discover which demo(s) to run,
